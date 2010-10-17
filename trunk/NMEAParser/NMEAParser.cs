@@ -13,6 +13,47 @@ namespace NMEAParser
 			LogFile,
 			Generated
 		}
+
+		public TimeSpan SerialPortActivityTimeout = new TimeSpan(0, 0, 0, 0, 1000);
+		public int SerialPortActivityRetryCount = 1;
+		bool CheckPortForNMEADevice(string portName)
+		{
+			string	junk;
+			SerialPort tp = new SerialPort(portName, this.p_SerialPort.BaudRate, this.p_SerialPort.Parity, this.p_SerialPort.DataBits, this.p_SerialPort.StopBits);
+			try {
+				tp.Open();
+				if(tp.IsOpen) {
+					try {
+						tp.ReadTimeout = 1000;
+//						this.SerialPortActivityTimeout.Milliseconds;
+						for(int i = 0; i < this.SerialPortActivityRetryCount; i++) {
+							try {
+								while(true) {
+									junk = tp.ReadLine();
+									if(junk.StartsWith("$GPRMC")) {
+										return (true);
+									}
+								}
+							} catch(TimeoutException tx) {
+								continue;
+							}
+						}
+						// didn't get a NMEA string, abort
+						return (false);
+					} finally {
+						tp.Close();
+					}
+				} else {
+					return (false);
+				}
+			} finally {
+				if(tp.IsOpen) {
+					tp.Close();
+				}
+				tp.Dispose();
+			}
+		}
+
 		public string ConnectionString
 		{
 			get
@@ -34,18 +75,22 @@ namespace NMEAParser
 					case ParserMode.Serial:
 						{
 							string[] spns = System.IO.Ports.SerialPort.GetPortNames();
-							foreach(string pn in spns) {
-								if(pn == null) {
-									continue;
-								}
+							if(!"AUTO".Equals(value)) {
+								foreach(string pn in spns) {
+									if(pn == null) {
+										continue;
+									}
 
-								if(pn.Equals(value)) {
-									p_SerialPortPortName = value;
-									break;
+									if(pn.Equals(value)) {
+										p_SerialPortPortName = value;
+										break;
+									}
 								}
-							}
-							if(!p_SerialPortPortName.Equals(value)) {
-								throw new System.IO.FileNotFoundException("Could not find specified COM port.", "value");
+								if(!p_SerialPortPortName.Equals(value)) {
+									throw new System.IO.FileNotFoundException("Could not find specified COM port.", "value");
+								}
+							} else {
+								p_SerialPortPortName = value;
 							}
 						}
 						break;
@@ -240,8 +285,8 @@ namespace NMEAParser
 			if(p_SerialPort != null) {
 				Disconnect();
 			}
+
 			p_SerialPort = new SerialPort();
-			p_SerialPort.PortName = p_SerialPortPortName;
 			p_SerialPort.BaudRate = p_SerialPortBaudRate;
 			p_SerialPort.DataBits = p_SerialPortDataBits;
 			switch(p_SerialPortParity) {
@@ -281,6 +326,22 @@ namespace NMEAParser
 					throw new Exception("Unexpected value for serial port stop bits: " + p_SerialPortStopBits.ToString());
 			}
 			p_SerialPort.ParityReplace = p_SerialPortParityReplacementByte;
+			if("AUTO".Equals(p_SerialPortPortName)) {
+				string[] spns = System.IO.Ports.SerialPort.GetPortNames();
+				foreach(string pn in spns) {
+					if(pn == null) {
+						continue;
+					}
+					if(this.CheckPortForNMEADevice(pn)) {
+						p_SerialPort.PortName = pn;
+						break;
+					}
+				}
+			} else {
+				p_SerialPort.PortName = p_SerialPortPortName;
+			}
+
+
 			p_SerialPort.DataReceived += SerialDataReceived;
 			p_SerialPort.Open();
 		}
