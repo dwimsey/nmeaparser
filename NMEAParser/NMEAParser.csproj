@@ -36,9 +36,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GPRMC.cs" />
+    <Compile Include="ParserExceptions.cs" />
+    <Compile Include="SentenceHandlers\SentenceHandlerCollection.cs" />
+    <Compile Include="SentenceHandlers\BaseSentenceHandler.cs" />
+    <Compile Include="SentenceHandlers\GPRMC.cs" />
     <Compile Include="NMEAParser.cs" />
+    <Compile Include="SentenceHandlers\ISentenceHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SentenceHandlers\UnknownSentenceHandler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
