@@ -13,6 +13,7 @@ namespace NMEAParser.SentenceHandlers
 		{
 			SentenceList = new Dictionary<string, ISentenceHandler>();
 			SentenceList.Add("GPRMC", new GPRMCHandler());
+			SentenceList.Add("HCHDG", new GPRMCHandler());
 			SentenceList.Add("unknown", new UnknownSentenceHandler());
 		}
 
