@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NMEAParser;
 
 namespace NMEAParser.SentenceHandlers
 {
@@ -47,7 +48,7 @@ namespace NMEAParser.SentenceHandlers
 				throw new Exception("Missing fix date field for NMEA sentence: " + Fields[0]);
 			}
 			if(!String.IsNullOrEmpty(Fields[1])) {
-				time = NMEAParser.ParseTime(NMEAParser.ParseDate(Fields[9]), Fields[1]);
+				time = Utils.ParseTime(Utils.ParseDate(Fields[9]), Fields[1]);
 			} else {
 				throw new Exception("Missing fix timestamp field for NMEA sentence: " + Fields[0]);
 			}
@@ -63,8 +64,8 @@ namespace NMEAParser.SentenceHandlers
 			if(String.IsNullOrEmpty(Fields[3]) || String.IsNullOrEmpty(Fields[4]) || String.IsNullOrEmpty(Fields[5]) || String.IsNullOrEmpty(Fields[6])) {
 				throw new Exception("Missing latitude and/or longitude field for NMEA sentence: " + Fields[0]);
 			}
-			lat = NMEAParser.ParseLatLon(Fields[3], Fields[4]);
-			lon = NMEAParser.ParseLatLon(Fields[5], Fields[6]);
+			lat = Utils.ParseLatLon(Fields[3], Fields[4]);
+			lon = Utils.ParseLatLon(Fields[5], Fields[6]);
 
 			if(!String.IsNullOrEmpty(Fields[7])) {
 				s = Double.Parse(Fields[7]);

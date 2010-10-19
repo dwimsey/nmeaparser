@@ -395,6 +395,7 @@ namespace NMEAParser
 				sentence = p_SerialPort.ReadLine();	//this may block breifly but thats okay, we're in our own thread
 				if(p_EnableRAWLogfile && p_RAWLogfile != null) {
 					p_RAWLogfile.WriteLine(sentence);
+					p_RAWLogfile.Flush();
 				}
 				try {
 					ParseNMEA0183Sentence(sentence, true);
@@ -439,7 +440,8 @@ namespace NMEAParser
 				if(value) {
 					if(p_RAWLogfile == null) {
 						DateTime n = DateTime.Now;
-						p_RAWLogfile = System.IO.File.CreateText(".\\NMEA-" + n.Year.ToString() + n.Month.ToString() + n.Day.ToString() + n.Hour.ToString() + n.Minute.ToString() + n.Second.ToString() + ".log");
+						string fname = "C:\\NMEA-" + n.Year.ToString() + n.Month.ToString() + n.Day.ToString() + n.Hour.ToString() + n.Minute.ToString() + n.Second.ToString() + ".log";
+						p_RAWLogfile = System.IO.File.CreateText(fname);
 					}
 				} else {
 					if(p_RAWLogfile != null) {
@@ -552,41 +554,6 @@ namespace NMEAParser
 				handler.HandleSentence(this, fields, true);
 			} catch {
 				throw new Exception("Error parsing NMEA sentence: " + fields[0]);
-			}
-		}
-
-		internal static DateTime ParseTime(DateTime day, string val)
-		{
-			return (new DateTime(day.Year, day.Month, day.Day, Int32.Parse(val.Substring(0, 2)), Int32.Parse(val.Substring(2, 2)), Int32.Parse(val.Substring(4, 2))));
-		}
-
-		internal static DateTime ParseDate(string val)
-		{
-			return (new DateTime(int.Parse(val.Substring(4, 2)), int.Parse(val.Substring(2, 2)), int.Parse(val.Substring(0, 2))));
-		}
-
-		internal static double ParseBearing(string val, string dir)
-		{
-			if(dir == "W") {
-				return (-1.0 * double.Parse(val));
-			} else {
-				return (double.Parse(val));
-			}
-		}
-
-		internal static double ParseLatLon(string val, string dir)
-		{
-			switch(dir) {
-				case "N":
-					return (double.Parse(val.Substring(0, 2)) + (double.Parse(val.Substring(2)) / 60.0));
-				case "E":
-					return (double.Parse(val.Substring(0, 3)) + (double.Parse(val.Substring(3)) / 60.0));
-				case "W":
-					return (-1.0 * (double.Parse(val.Substring(0, 3)) + (double.Parse(val.Substring(3)) / 60.0)));
-				case "S":
-					return (-1.0 * (double.Parse(val.Substring(0, 2)) + (double.Parse(val.Substring(2)) / 60.0)));
-				default:
-					return (double.NegativeInfinity);
 			}
 		}
 	}
