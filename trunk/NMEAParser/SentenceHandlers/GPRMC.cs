@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NMEAParser
+namespace NMEAParser.SentenceHandlers
 {
 	public class GPRMC
 	{
@@ -24,8 +24,16 @@ namespace NMEAParser
 			this.MagneticVariation = MagVariation;
 			this.FixTimeStamp = UTCTimeStamp;
 		}
+	}
 
-		internal static GPRMC ParseFields(string[] Fields)
+	public class GPRMCHandler : BaseSentenceHandler
+	{
+		internal GPRMCHandler()
+		{
+			p_Name = "GPRMC";
+		}
+
+		public override object ParseSentence(string[] Fields)
 		{
 			bool f;
 			double lat = 0.0;
@@ -34,6 +42,7 @@ namespace NMEAParser
 			double b;
 			double m;
 			DateTime time;
+
 			if(String.IsNullOrEmpty(Fields[9])) {
 				throw new Exception("Missing fix date field for NMEA sentence: " + Fields[0]);
 			}
@@ -42,7 +51,7 @@ namespace NMEAParser
 			} else {
 				throw new Exception("Missing fix timestamp field for NMEA sentence: " + Fields[0]);
 			}
-			
+
 			if(String.IsNullOrEmpty(Fields[2])) {
 				throw new Exception("Missing GPS Fix valid flag for NMEA sentence: " + Fields[0]);
 			}
