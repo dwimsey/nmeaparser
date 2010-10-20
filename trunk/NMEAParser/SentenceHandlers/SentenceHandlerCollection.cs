@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Reflection;
 
 namespace NMEAParser.SentenceHandlers
 {
@@ -12,9 +13,26 @@ namespace NMEAParser.SentenceHandlers
 		internal SentenceHandlerCollection()
 		{
 			SentenceList = new Dictionary<string, ISentenceHandler>();
-			SentenceList.Add("GPRMC", new GPRMCHandler());
-			SentenceList.Add("HCHDG", new GPRMCHandler());
-			SentenceList.Add("unknown", new UnknownSentenceHandler());
+
+			Type iSentenceHandlerType = typeof(ISentenceHandler);
+			Assembly tAssembly = Assembly.GetExecutingAssembly();
+			Type[] ts = tAssembly.GetExportedTypes();
+			foreach(Type t in ts) {
+				if(!t.IsClass) {
+					continue;
+				}
+				if(!iSentenceHandlerType.IsAssignableFrom(t)) {
+					continue;
+				}
+				if(t.Name.Equals("BaseSentenceHandler")) {
+					// We ignore this class because its the base class we use to derive from to save ourselves some work.
+					continue;
+				}
+
+				// Create an instance of the handler class and add it to our list
+				ISentenceHandler h = Activator.CreateInstance(t) as ISentenceHandler;
+				this.SentenceList.Add(h.Name, h);
+			}
 		}
 
 		public ISentenceHandler this[string SentenceName]    // Indexer declaration
