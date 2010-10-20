@@ -14,14 +14,20 @@ namespace NMEAParser.SentenceHandlers
 		{
 			SentenceList = new Dictionary<string, ISentenceHandler>();
 
+			// Get the type for the sentence handler interface and the assembly we belong to
 			Type iSentenceHandlerType = typeof(ISentenceHandler);
 			Assembly tAssembly = Assembly.GetExecutingAssembly();
+			// Get a list of all the types we have access too
 			Type[] ts = tAssembly.GetExportedTypes();
+			
+			// Loop through the types we found
 			foreach(Type t in ts) {
 				if(!t.IsClass) {
+					// This isn't a class so we don't care about it.
 					continue;
 				}
 				if(!iSentenceHandlerType.IsAssignableFrom(t)) {
+					// This class doesn't adhere to the ISentenceHandler interface, ignore it.
 					continue;
 				}
 				if(t.Name.Equals("BaseSentenceHandler")) {
@@ -35,6 +41,12 @@ namespace NMEAParser.SentenceHandlers
 			}
 		}
 
+		/// <summary>
+		/// Find the handler for the specified sentence type.
+		/// </summary>
+		/// <param name="SentenceName">Name of the sentence to find a handler for.</param>
+		/// <returns>The ISentenceHandler for the sentence named, or the UnknownSentenceHandler if
+		/// the sentence is of an unknown type.</returns>
 		public ISentenceHandler this[string SentenceName]    // Indexer declaration
 		{
 			get
