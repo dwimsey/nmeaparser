@@ -39,6 +39,8 @@
     <Compile Include="ParserExceptions.cs" />
     <Compile Include="SentenceHandlers\GPGGA.cs" />
     <Compile Include="SentenceHandlers\GPGLL.cs" />
+    <Compile Include="SentenceHandlers\GPGSA.cs" />
+    <Compile Include="SentenceHandlers\GPGSV.cs" />
     <Compile Include="SentenceHandlers\GPRTE.cs" />
     <Compile Include="SentenceHandlers\GPVTG.cs" />
     <Compile Include="SentenceHandlers\HCHDG.cs" />
