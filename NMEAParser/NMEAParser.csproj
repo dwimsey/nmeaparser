@@ -37,7 +37,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ParserExceptions.cs" />
+    <Compile Include="SentenceHandlers\GPGGA.cs" />
+    <Compile Include="SentenceHandlers\GPGLL.cs" />
+    <Compile Include="SentenceHandlers\GPRTE.cs" />
+    <Compile Include="SentenceHandlers\GPVTG.cs" />
     <Compile Include="SentenceHandlers\HCHDG.cs" />
+    <Compile Include="SentenceHandlers\SDDBT.cs" />
+    <Compile Include="SentenceHandlers\SDDPT.cs" />
+    <Compile Include="SentenceHandlers\SDMWT.cs" />
     <Compile Include="SentenceHandlers\SentenceHandlerCollection.cs" />
     <Compile Include="SentenceHandlers\BaseSentenceHandler.cs" />
     <Compile Include="SentenceHandlers\GPRMC.cs" />
