@@ -4,6 +4,9 @@ using System.Text;
 using System.IO.Ports;
 using NMEAParser.SentenceHandlers;
 
+using System.ComponentModel;
+using System.Threading;
+
 namespace NMEAParser
 {
 	public class NMEAParser
@@ -27,7 +30,7 @@ namespace NMEAParser
 					case ParserMode.Serial:
 						return (p_SerialPortPortName);
 					case ParserMode.LogFile:
-						throw new NotImplementedException("Not yet implemented");
+						return ("file://" + this.p_InputLogFilename);
 					case ParserMode.Generated:
 						throw new NotImplementedException("Not yet implemented");
 					default:
@@ -60,7 +63,13 @@ namespace NMEAParser
 						}
 						break;
 					case ParserMode.LogFile:
-						throw new NotImplementedException("Not yet implemented");
+						if(value.ToLower().StartsWith("file://")) {
+							// strip off the preceeding URL bits since we just want the filename
+							this.p_InputLogFilename = value.Substring(7);
+						} else {
+							this.p_InputLogFilename = value;
+						}
+						break;
 					case ParserMode.Generated:
 						throw new NotImplementedException("Not yet implemented");
 					default:
@@ -118,6 +127,43 @@ namespace NMEAParser
 			}
 		}
 
+		#region Log file reply methods
+		private void OpenLogfile()
+		{
+			if(this.p_InputLogFilename == null) {
+				throw new ArgumentNullException("p_InputLogFilename");
+			}
+			if(String.IsNullOrEmpty(this.p_InputLogFilename)) {
+				throw new ArgumentOutOfRangeException("p_InputLogFilename", "Filename is blank, a log filename is required.");
+			}
+			p_InputLog = System.IO.File.OpenText(this.p_InputLogFilename);
+
+			// start the thread which will read and spit out information from the log file as if it came from a GPS.
+			System.ComponentModel.BackgroundWorker p_FileReaderThread = new System.ComponentModel.BackgroundWorker();
+			p_FileReaderThread.DoWork +=new DoWorkEventHandler(p_FileReaderThread_DoWork);
+		}
+
+		private int p_InputLogCyclePeriod = 1000;
+		void  p_FileReaderThread_DoWork(object sender, DoWorkEventArgs e)
+		{
+			if(p_InputLog == null) {
+				throw new ArgumentNullException("p_InputLog");
+			}
+			while(true) {
+				while(!this.p_InputLog.EndOfStream) {
+					this.ParseNMEA0183Sentence(p_InputLog.ReadLine(), true);
+					Thread.Sleep(this.p_InputLogCyclePeriod);
+				}
+				// restart the log?
+				if(false) {
+					p_InputLog.Close();
+					p_InputLog = System.IO.File.OpenText(this.p_InputLogFilename);
+				}
+			}
+		}
+
+		#endregion Log file replay methods
+
 		#region Serial port state variables
 
 		private string p_SerialPortPortName;
@@ -150,9 +196,7 @@ namespace NMEAParser
 										try {
 											ParseNMEA0183Sentence(junk, false);
 											return (true);
-										} catch(Exception ex) {
-											int ii = 0;
-											ii++;
+										} catch(Exception) {
 										}
 									}
 								} catch(TimeoutException) {
@@ -423,6 +467,9 @@ namespace NMEAParser
 		}
 
 		private System.IO.TextWriter p_RAWLogfile;
+		private System.IO.StreamReader p_InputLog;
+		private string p_InputLogFilename;
+
 		private bool p_EnableRAWLogfile;
 		public bool EnableRAWLogfile
 		{
@@ -439,7 +486,7 @@ namespace NMEAParser
 				p_EnableRAWLogfile = value;
 				if(value) {
 					if(p_RAWLogfile == null) {
-						DateTime n = DateTime.Now;
+						DateTime n = DateTime.UtcNow;
 						string fname = "C:\\NMEA-" + n.Year.ToString() + n.Month.ToString() + n.Day.ToString() + n.Hour.ToString() + n.Minute.ToString() + n.Second.ToString() + ".log";
 						p_RAWLogfile = System.IO.File.CreateText(fname);
 					}
@@ -464,6 +511,8 @@ namespace NMEAParser
 					SerialConnect();
 					break;
 				case ParserMode.LogFile:
+					OpenLogfile();
+					break;
 				case ParserMode.Generated:
 					throw new NotImplementedException("This mode is not yet implemented: " + p_ParserMode.ToString());
 				default:
@@ -478,6 +527,10 @@ namespace NMEAParser
 					p_SerialPort.Close();
 				}
 				SerialDisconnect();
+			}
+			if(this.p_InputLog != null) {
+				this.p_InputLog.Close();
+				this.p_InputLog = null;
 			}
 			EnableRAWLogfile = false;
 		}

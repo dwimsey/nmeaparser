@@ -20,7 +20,7 @@ namespace NMEAParser.SentenceHandlers
 			// Get a list of all the types we have access too
 			Type[] ts = tAssembly.GetExportedTypes();
 			
-			// Loop through the types we found
+			// Loop through the types we found and call the handler loaders
 			foreach(Type t in ts) {
 				if(!t.IsClass) {
 					// This isn't a class so we don't care about it.
@@ -36,7 +36,7 @@ namespace NMEAParser.SentenceHandlers
 				}
 
 				// Create an instance of the handler class and add it to our list
-				ISentenceHandler h = Activator.CreateInstance(t) as ISentenceHandler;
+				ISentenceHandler h = Activator.CreateInstance(t, true) as ISentenceHandler;
 				this.SentenceList.Add(h.Name, h);
 			}
 		}
