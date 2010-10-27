@@ -47,7 +47,7 @@ namespace NMEAParser.SentenceHandlers
 		/// Sentence Example: <code>$GPGGA,002732,3545.2764,N,07849.2324,W,2,08,1.2,136.1,M,-33.7,M,,*76</code>
 		/// </remarks>
 		/// <param name="Fields">Sentence fields for the sentence to be parsed.</param>
-		/// <returns>A HCHDG object representing the data in Fields</returns>
+		/// <returns>A GPGGA object representing the data in Fields</returns>
 		public override object ParseSentence(string[] Fields)
 		{
 			DateTime ftime = DateTime.MinValue;
@@ -104,27 +104,54 @@ namespace NMEAParser.SentenceHandlers
 					throw new ArgumentException("Could not parse altitude value from string.", "Altitude", ex);
 				}
 			}
-
+			
 			if(!String.IsNullOrEmpty(Fields[10])) {
 				try {
-					altitude = double.Parse(Fields[10]);
+					switch(Fields[10]) {
+						case "M":
+							// meters
+							break;
+						default:
+							throw new ArgumentException("Unexpected value for Altitude Scale: " + Fields[10], "AltitudeScale");
+					}
 				} catch(Exception ex) {
-					throw new ArgumentException("Could not parse height of Geoid value from string.", "HGeoid", ex);
+					throw new ArgumentException("Could not parse altitude value from string.", "AltitudeScale", ex);
 				}
 			}
 
 			if(!String.IsNullOrEmpty(Fields[11])) {
 				try {
-					dgpsage = double.Parse(Fields[11]);
+					hgeoid = double.Parse(Fields[11]);
 				} catch(Exception ex) {
-					throw new ArgumentException("Could not parse DGPS last update age value from string.", "DGPSAge", ex);
+					throw new ArgumentException("Could not parse height of Geoid value from string.", "HGeoid", ex);
 				}
 			}
 
 			if(!String.IsNullOrEmpty(Fields[12])) {
-				dgpsstationid = Fields[12];
+				try {
+					switch(Fields[12]) {
+						case "M":
+						// meters
+						default:
+							throw new ArgumentException("Unexpected value for geoid height scale: " + Fields[12], "AltitudeScale");
+					}
+				} catch(Exception ex) {
+					throw new ArgumentException("Could not parse geoid height scale from string.", "HGeoidScale", ex);
+				}
 			}
 
+			if(!String.IsNullOrEmpty(Fields[13])) {
+				try {
+					dgpsage = double.Parse(Fields[13]);
+					// field 14 seems to be missing sometimes, I can only assume its because there was no DGPS station
+					// so no point including the field on some units
+					if(!String.IsNullOrEmpty(Fields[14])) {
+						dgpsstationid = Fields[14];
+					}
+				} catch(Exception ex) {
+					throw new ArgumentException("Could not parse DGPS last update age value from string.", "DGPSAge", ex);
+				}
+			}
 			return (new GPGGA(ftime, lat, lon, fqual, satstracked, hdop, altitude, hgeoid, dgpsage, dgpsstationid));
 		}
 	}
