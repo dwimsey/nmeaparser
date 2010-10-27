@@ -141,17 +141,25 @@ namespace NMEAParser
 			// start the thread which will read and spit out information from the log file as if it came from a GPS.
 			System.ComponentModel.BackgroundWorker p_FileReaderThread = new System.ComponentModel.BackgroundWorker();
 			p_FileReaderThread.DoWork +=new DoWorkEventHandler(p_FileReaderThread_DoWork);
+
+			p_FileReaderThread.RunWorkerAsync();
 		}
 
-		private int p_InputLogCyclePeriod = 1000;
+		private int p_InputLogCyclePeriod = 10;
 		void  p_FileReaderThread_DoWork(object sender, DoWorkEventArgs e)
 		{
 			if(p_InputLog == null) {
 				throw new ArgumentNullException("p_InputLog");
 			}
+			string currentLine;
 			while(true) {
 				while(!this.p_InputLog.EndOfStream) {
-					this.ParseNMEA0183Sentence(p_InputLog.ReadLine(), true);
+					currentLine = p_InputLog.ReadLine();
+					if(string.IsNullOrEmpty(currentLine)) {
+						// Ignore blank lines in files
+						continue;
+					}
+					this.ParseNMEA0183Sentence(currentLine, true);
 					Thread.Sleep(this.p_InputLogCyclePeriod);
 				}
 				// restart the log?
@@ -505,12 +513,13 @@ namespace NMEAParser
 				Disconnect();
 			}
 
-			EnableRAWLogfile = true;
 			switch(p_ParserMode) {
 				case ParserMode.Serial:
+					EnableRAWLogfile = true;
 					SerialConnect();
 					break;
 				case ParserMode.LogFile:
+					EnableRAWLogfile = false;	// It would be silly to log data from log files now wouldn't it?
 					OpenLogfile();
 					break;
 				case ParserMode.Generated:
@@ -605,8 +614,8 @@ namespace NMEAParser
 				NMEACmd = fields[0].Substring(1);
 				ISentenceHandler handler = Sentences[NMEACmd];
 				handler.HandleSentence(this, fields, true);
-			} catch {
-				throw new Exception("Error parsing NMEA sentence: " + fields[0]);
+			} catch(Exception ex) {
+				throw new Exception("Error parsing NMEA sentence: " + fields[0], ex);
 			}
 		}
 	}
