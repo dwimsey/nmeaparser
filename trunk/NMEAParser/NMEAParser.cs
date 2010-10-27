@@ -145,7 +145,56 @@ namespace NMEAParser
 			p_FileReaderThread.RunWorkerAsync();
 		}
 
-		private int p_InputLogCyclePeriod = 10;
+		/// <summary>
+		/// The period of time in milliseconds between input bursts when reading a log file.  The log file thread will
+		/// wait this long between sending each cycle complete sentence.  If 0, the log will be processed
+		/// without any delay.
+		///
+		/// The value of this member does not effect the parser when in Serial mode.
+		/// </summary>
+		private int p_InputLogCyclePeriod = 1000;
+		public int InputLogCyclePeriod
+		{
+			get
+			{
+				return (p_InputLogCyclePeriod);
+			}
+			set
+			{
+				// if the value specified is less than 0, its invalid and we throw an exception
+				if(value<0) {
+					throw new ArgumentOutOfRangeException("InputLogCyclePeriod", value, "Cycle period can not be less than zero.");
+				}
+				p_InputLogCyclePeriod = value;
+			}
+		}
+
+		/// <summary>
+		/// Prefix to of the NMEA sentence which marks the beginning of a new output cycle.
+		/// The log file reader will pause for the InputLogCyclePeriod milliseconds each time it
+		/// reads a sentence starting with this string.  The delay happens before the line is sent
+		/// to the parser for client notification.
+		/// 
+		/// If this value is null or emtpy, the log file playback is paused for every line, except
+		/// for lines containing only whitespace.
+		/// 
+		/// Note: If InputLogCyclePeriod is less than one, log file playback occurs as fast as possible
+		/// regardless of the InputLogCycleSentencePrefix value.
+		/// 
+		/// The value of this member does not effect the parser when in Serial mode.
+		/// </summary>
+		private string p_InputLogCycleSentencePrefix = "$GPRMC,";
+		public string InputLogCycleSentencePrefix
+		{
+			get
+			{
+				return (InputLogCycleSentencePrefix);
+			}
+			set
+			{
+				p_InputLogCycleSentencePrefix = value;
+			}
+		}
 		void  p_FileReaderThread_DoWork(object sender, DoWorkEventArgs e)
 		{
 			if(p_InputLog == null) {
@@ -159,8 +208,24 @@ namespace NMEAParser
 						// Ignore blank lines in files
 						continue;
 					}
+
+					// If the p_InputLogCyclePeriod is greater than 0, then we need
+					// to determine if we need to wait for the next cycle based on
+					// the prefix of this sentence.  If its 0, then we just spew
+					// notifications as fast as we can.
+					if(p_InputLogCyclePeriod > 0) {
+						// If the prefix string is NULL, we wait on every line.
+						if(string.IsNullOrEmpty(p_InputLogCycleSentencePrefix)) {
+							Thread.Sleep(this.p_InputLogCyclePeriod);
+						} else {
+							// If this sentence starts with the p_InputLogCycleSentencePrefix then we
+							// wait until the next cycle should start before sending the next burst.
+							if(currentLine.StartsWith(p_InputLogCycleSentencePrefix)) {
+								Thread.Sleep(this.p_InputLogCyclePeriod);
+							}
+						}
+					}
 					this.ParseNMEA0183Sentence(currentLine, true);
-					Thread.Sleep(this.p_InputLogCyclePeriod);
 				}
 				// restart the log?
 				if(false) {
