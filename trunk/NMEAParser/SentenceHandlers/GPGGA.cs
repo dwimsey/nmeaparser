@@ -6,16 +6,16 @@ namespace NMEAParser.SentenceHandlers
 {
 	public class GPGGA
 	{
-		DateTime FixTime = DateTime.MinValue;
-		double Latitude = double.MinValue;
-		double Longitude = double.MinValue;
-		int FixQuality;
-		int SatellitesTracked;
-		double HDOP;
-		double Altitude;
-		double HeightOfGeoid;
-		double DGPSAge;
-		string DGSStationId;
+		public readonly DateTime FixTime = DateTime.MinValue;
+		public readonly double Latitude = double.MinValue;
+		public readonly double Longitude = double.MinValue;
+		public readonly int FixQuality;
+		public readonly int SatellitesTracked;
+		public readonly double HDOP;
+		public readonly double Altitude;
+		public readonly double HeightOfGeoid;
+		public readonly double DGPSAge;
+		public readonly string DGSStationId;
 
 		internal GPGGA(DateTime ftime, double latitude, double longitude, int fqual, int stracked, double hdop, double alt, double hgeiod, double dgpsags, string dgpsid)
 		{
