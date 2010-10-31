@@ -14,8 +14,8 @@ namespace NMEAParser.SentenceHandlers
 			Unknown
 		}
 
-		Double Temperature = Double.MinValue;
-		TemperatureScale Scale = TemperatureScale.Unknown;
+		public readonly Double Temperature = Double.MinValue;
+		public readonly TemperatureScale Scale = TemperatureScale.Unknown;
 
 		internal SDMTW(double temp, TemperatureScale s)
 		{

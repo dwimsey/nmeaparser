@@ -13,11 +13,11 @@ namespace NMEAParser.SentenceHandlers
 			NotValid,
 			Unavailable
 		}
-		public double MagneticCourse = double.MinValue;
-		public double TrueCourse = double.MinValue;
-		public double GroundSpeedKnots = double.MinValue;
-		public double GroundSpeedKilometers = double.MinValue;
-		public GPSModeType Mode;
+		public readonly double MagneticCourse = double.MinValue;
+		public readonly double TrueCourse = double.MinValue;
+		public readonly double GroundSpeedKnots = double.MinValue;
+		public readonly double GroundSpeedKilometers = double.MinValue;
+		public readonly GPSModeType Mode;
 
 		internal GPVTG(double mcourse, double tcourse, double knots, double kilometers, GPSModeType mode)
 		{
