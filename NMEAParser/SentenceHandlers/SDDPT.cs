@@ -41,25 +41,33 @@ namespace NMEAParser.SentenceHandlers
 			double keeloffset = double.MinValue;
 			double maxdepth = double.MinValue;
 
-			if(!String.IsNullOrEmpty(Fields[1])) {
-				try {
-					depth = double.Parse(Fields[1]);
-				} catch(Exception ex) {
-					throw new ArgumentException("Could not parse depth value from string: " + Fields[1].ToString(), "Depth", ex);
+			if(Fields.Length > 1) {
+				if(!String.IsNullOrEmpty(Fields[1])) {
+					try {
+						depth = double.Parse(Fields[1]);
+					} catch(Exception ex) {
+						throw new ArgumentException("Could not parse depth value from string: " + Fields[1].ToString(), "Depth", ex);
+					}
 				}
 			}
-			if(!String.IsNullOrEmpty(Fields[2])) {
-				try {
-					keeloffset = double.Parse(Fields[2]);
-				} catch(Exception ex) {
-					throw new ArgumentException("Could not parse keel offset value from string: " + Fields[2].ToString(), "KeelOffset", ex);
+
+			if(Fields.Length > 2) {
+				if(!String.IsNullOrEmpty(Fields[2])) {
+					try {
+						keeloffset = double.Parse(Fields[2]);
+					} catch(Exception ex) {
+						throw new ArgumentException("Could not parse keel offset value from string: " + Fields[2].ToString(), "KeelOffset", ex);
+					}
 				}
 			}
-			if(!String.IsNullOrEmpty(Fields[3])) {
-				try {
-					maxdepth = double.Parse(Fields[3]);
-				} catch(Exception ex) {
-					throw new ArgumentException("Could not parse maximum value from string: " + Fields[3].ToString(), "MaxDepth", ex);
+
+			if(Fields.Length > 3) {
+				if(!String.IsNullOrEmpty(Fields[3])) {
+					try {
+						maxdepth = double.Parse(Fields[3]);
+					} catch(Exception ex) {
+						throw new ArgumentException("Could not parse maximum value from string: " + Fields[3].ToString(), "MaxDepth", ex);
+					}
 				}
 			}
 			return (new SDDPT(depth, keeloffset, maxdepth));
