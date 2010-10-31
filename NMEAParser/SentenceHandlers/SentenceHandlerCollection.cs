@@ -54,7 +54,7 @@ namespace NMEAParser.SentenceHandlers
 				if(this.SentenceList.ContainsKey(SentenceName)) {
 					return (this.SentenceList[SentenceName]);
 				} else {
-					return (this.SentenceList["unknown"]);
+					return (this.SentenceList["Unknown"]);
 				}
 			}
 		}
