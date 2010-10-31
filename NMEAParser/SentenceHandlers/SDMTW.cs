@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NMEAParser.SentenceHandlers
 {
-	public class SDMWT
+	public class SDMTW
 	{
 		public enum TemperatureScale
 		{
@@ -17,34 +17,34 @@ namespace NMEAParser.SentenceHandlers
 		Double Temperature = Double.MinValue;
 		TemperatureScale Scale = TemperatureScale.Unknown;
 
-		internal SDMWT(double temp, TemperatureScale s)
+		internal SDMTW(double temp, TemperatureScale s)
 		{
 			this.Temperature = temp;
 			this.Scale = s;
 		}
 	}
 
-	public class SDMWTHandler : BaseSentenceHandler
+	public class SDMTWHandler : BaseSentenceHandler
 	{
-		internal SDMWTHandler()
+		internal SDMTWHandler()
 		{
-			p_Name = "SDMWT";
+			p_Name = "SDMTW";
 		}
 
 		/// <summary>
-		/// Parses SDMWT sentences into SDMWT objects.
+		/// Parses SDMTW sentences into SDMTW objects.
 		/// </summary>
 		/// <remarks>
-		/// Sentence Format: <code>$SDMWT,{temperature},{scale}*checksum</code>
+		/// Sentence Format: <code>$SDMTW,{temperature},{scale}*checksum</code>
 		/// Sentence Example: <code>$SDMTW,26.6,C*06</code>
 		/// </remarks>
 		/// 
 		/// <param name="Fields">Sentence fields for the sentence to be parsed.</param>
-		/// <returns>A SDMWT object representing the data in Fields</returns>
+		/// <returns>A SDMTW object representing the data in Fields</returns>
 		public override object ParseSentence(string[] Fields)
 		{
 			double temperature = double.MinValue;
-			SDMWT.TemperatureScale scale = SDMWT.TemperatureScale.Unknown;
+			SDMTW.TemperatureScale scale = SDMTW.TemperatureScale.Unknown;
 
 			if(!String.IsNullOrEmpty(Fields[1])) {
 				try {
@@ -55,16 +55,16 @@ namespace NMEAParser.SentenceHandlers
 			}
 			if(!String.IsNullOrEmpty(Fields[2])) {
 				if(Fields[2].Equals("C")) {
-					scale = SDMWT.TemperatureScale.Celsius;
+					scale = SDMTW.TemperatureScale.Celsius;
 				} else if(Fields[2].Equals("F")) {
-					scale = SDMWT.TemperatureScale.Fahrenheit;
+					scale = SDMTW.TemperatureScale.Fahrenheit;
 				} else if(Fields[2].Equals("K")) {
-					scale = SDMWT.TemperatureScale.Kelvin;
+					scale = SDMTW.TemperatureScale.Kelvin;
 				} else {
 					throw new ArgumentException("Could not parse temperature scale value from string, unexpected value: " + Fields[2].ToString(), "Scale");
 				}
 			}
-			return (new SDMWT(temperature, scale));
+			return (new SDMTW(temperature, scale));
 		}
 	}
 }
