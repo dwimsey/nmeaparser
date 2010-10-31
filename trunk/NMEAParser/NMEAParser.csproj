@@ -46,7 +46,7 @@
     <Compile Include="SentenceHandlers\HCHDG.cs" />
     <Compile Include="SentenceHandlers\SDDBT.cs" />
     <Compile Include="SentenceHandlers\SDDPT.cs" />
-    <Compile Include="SentenceHandlers\SDMWT.cs" />
+    <Compile Include="SentenceHandlers\SDMTW.cs" />
     <Compile Include="SentenceHandlers\SentenceHandlerCollection.cs" />
     <Compile Include="SentenceHandlers\BaseSentenceHandler.cs" />
     <Compile Include="SentenceHandlers\GPRMC.cs" />
