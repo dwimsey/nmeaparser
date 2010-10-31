@@ -6,9 +6,9 @@ namespace NMEAParser.SentenceHandlers
 {
 	public class SDDPT
 	{
-		double Depth = double.MinValue;
-		double KeelOffset = double.MinValue;
-		double MaxDepth = double.MinValue;
+		public readonly double Depth = double.MinValue;
+		public readonly double KeelOffset = double.MinValue;
+		public readonly double MaxDepth = double.MinValue;
 
 		internal SDDPT(double depth, double keeloffset, double maxdepth)
 		{

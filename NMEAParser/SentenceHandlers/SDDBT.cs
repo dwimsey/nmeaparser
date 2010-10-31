@@ -6,9 +6,9 @@ namespace NMEAParser.SentenceHandlers
 {
 	public class SDDBT
 	{
-		Double Feet = Double.MinValue;
-		Double Meters = Double.MinValue;
-		Double Fathoms = Double.MinValue;
+		public readonly Double Feet = Double.MinValue;
+		public readonly Double Meters = Double.MinValue;
+		public readonly Double Fathoms = Double.MinValue;
 
 		internal SDDBT(double feet, double meters, double fathoms)
 		{

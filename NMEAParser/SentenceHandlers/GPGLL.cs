@@ -6,10 +6,11 @@ namespace NMEAParser.SentenceHandlers
 {
 	public class GPGLL
 	{
-		Double Latitude;
-		Double Longitude;
-		DateTime FixTimestamp;
-		bool FixActive;
+		public readonly Double Latitude;
+		public readonly Double Longitude;
+		public readonly DateTime FixTimestamp;
+		public readonly bool FixActive;
+
 		internal GPGLL(double latitude, double longitude, DateTime fixts, bool fixactive)
 		{
 			this.Latitude = latitude;

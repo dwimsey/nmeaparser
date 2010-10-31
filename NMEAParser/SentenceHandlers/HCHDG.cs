@@ -6,9 +6,9 @@ namespace NMEAParser.SentenceHandlers
 {
 	public class HCHDG
 	{
-		Double Heading;
-		Double Deviation;
-		Double Variation;
+		public readonly Double Heading;
+		public readonly Double Deviation;
+		public readonly Double Variation;
 		internal HCHDG(double heading, double deviation, double variation)
 		{
 			this.Heading = heading;
