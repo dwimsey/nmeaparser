@@ -105,12 +105,7 @@ namespace NMEAParser.SentenceHandlers
 			}
 			if(!String.IsNullOrEmpty(Fields[17])) {
 				try {
-					string f = Fields[17];
-					int i = f.IndexOf("*");
-					if(i > -1) {
-						f = f.Substring(0, i);
-					}
-					VDOP = double.Parse(f);
+					VDOP = double.Parse(Fields[17]);
 				} catch(Exception ex) {
 					throw new ArgumentException("Could not parse VDOP  value from string.", "VDOP", ex);
 				}

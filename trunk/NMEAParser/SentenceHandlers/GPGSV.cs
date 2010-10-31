@@ -68,19 +68,10 @@ namespace NMEAParser.SentenceHandlers
 			}
 
 			int c = 0;
-			string f;
-			int i;
 			for(int offset = 4; (offset+3) < Fields.Length; offset += 4) {
 				try {
 					if((!String.IsNullOrEmpty(Fields[offset])) && (!String.IsNullOrEmpty(Fields[offset+1])) && (!String.IsNullOrEmpty(Fields[offset+2]))) {
-						f = Fields[offset+3];
-						if(f != null) {
-							i = f.IndexOf("*");
-							if(i > -1) {
-								f = f.Substring(0, i);
-							}
-						}
-						sats[c++] = Satellite.Parse(Fields[offset], Fields[offset+1], Fields[offset+2], f);
+						sats[c++] = Satellite.Parse(Fields[offset], Fields[offset+1], Fields[offset+2], Fields[offset+3]);
 					}
 				} catch(Exception ex) {
 					throw new ArgumentException("Could not parse satellites information from strings.", "SatellitesInView", ex);

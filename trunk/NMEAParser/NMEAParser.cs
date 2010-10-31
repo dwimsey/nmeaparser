@@ -668,7 +668,14 @@ namespace NMEAParser
 				throw new ParserException("Checksum verification failed.");
 			}
 
-			string[] fields = NMEA0183Sentence.Split(',');
+			string[] fields;
+			int chksum_offset = NMEA0183Sentence.IndexOf('*');
+			if(chksum_offset>-1) {
+				fields = NMEA0183Sentence.Substring(0, chksum_offset).Split(',');
+			} else {
+				fields = NMEA0183Sentence.Split(',');
+			}
+
 			if(fields.Length < 2) {
 				// doesn't look like a NMEA line!
 				throw new ParserException("Sentence does not contain enough fields");
