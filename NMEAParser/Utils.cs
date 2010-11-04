@@ -8,12 +8,20 @@ namespace NMEAParser
 	{
 		internal static DateTime ParseTime(DateTime day, string val)
 		{
-			return (new DateTime(day.Year, day.Month, day.Day, Int32.Parse(val.Substring(0, 2)), Int32.Parse(val.Substring(2, 2)), Int32.Parse(val.Substring(4, 2))));
+			return (new DateTime(day.Year, day.Month, day.Day, Int32.Parse(val.Substring(0, 2)), Int32.Parse(val.Substring(2, 2)), Int32.Parse(val.Substring(4, 2)), DateTimeKind.Utc));
 		}
 
 		internal static DateTime ParseDate(string val)
 		{
-			return (new DateTime(int.Parse(val.Substring(4, 2)), int.Parse(val.Substring(2, 2)), int.Parse(val.Substring(0, 2))));
+			int cc = int.Parse(val.Substring(4, 2));
+			// @HACK Y2K style bug workaround
+			if(cc<78) {			// The first GPS satellite was launched in 1978, so anything lower than that
+								// must be after Y2K
+				cc += 2000;
+			} else {
+				cc += 1900;
+			}
+			return (new DateTime(cc, int.Parse(val.Substring(2, 2)), int.Parse(val.Substring(0, 2)), 0, 0, 0, DateTimeKind.Utc));
 		}
 
 		internal static double ParseBearing(string val, string dir)
