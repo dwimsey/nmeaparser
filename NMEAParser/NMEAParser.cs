@@ -275,7 +275,7 @@ namespace NMEAParser
 				if(tp.IsOpen) {
 					try {
 						try {
-							tp.ReadTimeout = 1000;
+							tp.ReadTimeout = this.SerialPortActivityTimeout.Milliseconds;
 							//						this.SerialPortActivityTimeout.Milliseconds;
 							for(int i = 0; i < this.SerialPortActivityRetryCount; i++) {
 								try {
