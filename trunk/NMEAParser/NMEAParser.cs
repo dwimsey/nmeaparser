@@ -478,21 +478,39 @@ namespace NMEAParser
 					throw new Exception("Unexpected value for serial port stop bits: " + p_SerialPortStopBits.ToString());
 			}
 			p_SerialPort.ParityReplace = p_SerialPortParityReplacementByte;
+			bool foundValidPort = false;
+			string[] spns = System.IO.Ports.SerialPort.GetPortNames();
 			if("AUTO".Equals(p_SerialPortPortName)) {
-				string[] spns = System.IO.Ports.SerialPort.GetPortNames();
 				foreach(string pn in spns) {
 					if(pn == null) {
 						continue;
 					}
 					if(this.SerialCheckPortForNMEADevice(pn)) {
 						p_SerialPort.PortName = pn;
+						foundValidPort = true;
 						break;
 					}
 				}
+				if(!foundValidPort) {
+					throw new System.IO.IOException("Could not find a NMEA compatible device on any available serial port.");
+				}
 			} else {
-				p_SerialPort.PortName = p_SerialPortPortName;
+				foreach(string pn in spns) {
+					if(pn == null) {
+						continue;
+					}
+					if(pn.Equals(p_SerialPortPortName)) {
+						if(this.SerialCheckPortForNMEADevice(pn)) {
+							p_SerialPort.PortName = pn;
+							foundValidPort = true;
+							break;
+						}
+					}
+				}
+				if(!foundValidPort) {
+					throw new System.IO.IOException("Could not find a NMEA compatible device on the specified port: " + p_SerialPortPortName);
+				}
 			}
-
 
 			p_SerialPort.DataReceived += SerialDataReceived;
 			p_SerialPort.Open();
