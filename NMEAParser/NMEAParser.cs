@@ -18,6 +18,19 @@ namespace NMEAParser
 			Generated
 		}
 
+		private bool p_TrapSentenceParserExceptions = true;
+		public bool TrapSentenceParserExceptions
+		{
+			get
+			{
+				return (p_TrapSentenceParserExceptions);
+			}
+			set
+			{
+				p_TrapSentenceParserExceptions = value;
+			}
+		}
+
 		public SentenceHandlerCollection Sentences;
 		public TimeSpan SerialPortActivityTimeout;
 		public int SerialPortActivityRetryCount;
@@ -225,7 +238,13 @@ namespace NMEAParser
 							}
 						}
 					}
-					this.ParseNMEA0183Sentence(currentLine, true);
+					try {
+						this.ParseNMEA0183Sentence(currentLine, true);
+					} catch(Exception ex) {
+						if(!p_TrapSentenceParserExceptions) {
+							throw ex;
+						}
+					}
 				}
 				if(this.p_TailLogfile) {
 					// @TODO this doesn't handle when a file shrinks, such as when it rolls over or
@@ -554,12 +573,11 @@ namespace NMEAParser
 				// file in its original form for future reference
 				sentence = sentence.Trim();
 				try {
-					ParseNMEA0183Sentence(sentence, true);
-				} catch {
-					int i = 0;
-					i++;
-					// while we want to ignore invalid NMEA sentences, we don't want them to take the whole
-					// application down due to some fuzz on a serial cable or unexpected output from a device
+					this.ParseNMEA0183Sentence(sentence, true);
+				} catch(Exception ex) {
+					if(!p_TrapSentenceParserExceptions) {
+						throw ex;
+					}
 				}
 			}
 		}
@@ -723,37 +741,58 @@ namespace NMEAParser
 			return (true);
 		}
 
+		private bool p_SentencesHaveChecksums = false;
 		private void ParseNMEA0183Sentence(string NMEA0183Sentence, bool EnableEvents)
 		{
+			if(NMEA0183Sentence == null) {
+				throw new ParserException("ParseNMEA0183Sentence argument 1 can not be null, it must be a valid NMEA 0183 format sentence.");
+			}
+
 			if(!NMEA0183Sentence.StartsWith("$")) {
 				throw new ParserException("Sentence does not begin with $.");
 			}
 
-			if(!VerifyNMEA0183CheckSum(NMEA0183Sentence)) {
-				// checksum is invalid, ignore this line
-				throw new ParserException("Checksum verification failed.");
+			// if we have a checksum, nop of it and anything after it, which will handle NMEA logs that are timestamped on the end
+			int chksum_offset = NMEA0183Sentence.LastIndexOf('*');
+			string timestampString = null;
+			if(chksum_offset>-1) {
+				if(NMEA0183Sentence.Length-3 > chksum_offset) {
+					// this string has something after the checksum that might be a timestamp
+					timestampString = NMEA0183Sentence.Substring(chksum_offset + 3);
+					NMEA0183Sentence = NMEA0183Sentence.Substring(0, chksum_offset + 3);
+				}
+
+				// verify the checksum
+				if(!VerifyNMEA0183CheckSum(NMEA0183Sentence)) {
+					// checksum is invalid, ignore this line
+					throw new ParserException("Checksum verification failed.");
+				}
+				p_SentencesHaveChecksums = true;
+
+				// Remove the remaining checksum now so it doesn't show up in a data field.
+				NMEA0183Sentence = NMEA0183Sentence.Substring(0, chksum_offset);
+			} else {
+				// we can't verify the checksum because we don't appear to have one, are we supposed to?
+				/// @TODO Add a varible to check against to handle sentences without checksums, perhaps we sould require them once we've seen a valid one.
+				if(p_SentencesHaveChecksums) {
+					throw new ParserException("Sentence does not contain a checksum and this parser is configured to require sentence checksums.");
+				}
 			}
 
-			string[] fields;
-			int chksum_offset = NMEA0183Sentence.IndexOf('*');
-			if(chksum_offset>-1) {
-				fields = NMEA0183Sentence.Substring(0, chksum_offset).Split(',');
-			} else {
-				fields = NMEA0183Sentence.Split(',');
-			}
+
+			string[] fields = NMEA0183Sentence.Split(',');
 
 			if(fields.Length < 2) {
 				// doesn't look like a NMEA line!
 				throw new ParserException("Sentence does not contain enough fields");
 			}
 
-			string NMEACmd = "Error";
-			try {
-				NMEACmd = fields[0].Substring(1);
+			if(fields[0].Length > 0) {
+				string NMEACmd = fields[0].Substring(1);
 				ISentenceHandler handler = Sentences[NMEACmd];
 				handler.HandleSentence(this, fields, true);
-			} catch(Exception ex) {
-				throw new Exception("Error parsing NMEA sentence: " + fields[0], ex);
+			} else {
+				throw new ParserException("Sentence does not appear to contain a type field: " + NMEA0183Sentence);
 			}
 		}
 	}
