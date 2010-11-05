@@ -280,8 +280,11 @@ namespace NMEAParser
 							for(int i = 0; i < this.SerialPortActivityRetryCount; i++) {
 								try {
 									while(true) {
-										junk = tp.ReadLine();
+										junk = tp.ReadLine().Trim();
 										try {
+											// If ParseNMEA0183Sentence() doesn't throw an exception
+											// this sentence is a valid NMEA sentence that we know how
+											// to handle, so we can use this device for something
 											ParseNMEA0183Sentence(junk, false);
 											return (true);
 										} catch(Exception) {
@@ -547,6 +550,9 @@ namespace NMEAParser
 					p_RAWLogfile.WriteLine(sentence);
 					p_RAWLogfile.Flush();
 				}
+				// remove any straggling whitespace, we do this after its been put in the log
+				// file in its original form for future reference
+				sentence = sentence.Trim();
 				try {
 					ParseNMEA0183Sentence(sentence, true);
 				} catch {
