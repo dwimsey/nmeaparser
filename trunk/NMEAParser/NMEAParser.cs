@@ -296,15 +296,21 @@ namespace NMEAParser
 						try {
 							tp.ReadTimeout = this.SerialPortActivityTimeout.Milliseconds;
 							//						this.SerialPortActivityTimeout.Milliseconds;
+							DateTime endTime;
 							for(int i = 0; i < this.SerialPortActivityRetryCount; i++) {
 								try {
-									while(true) {
+									// Read from the serial port until we run out of time,
+									// because ReadLine() may block for the delay time as well
+									// this loop may last up to double the delay time before
+									// continueing on.
+									endTime = DateTime.Now + this.SerialPortActivityTimeout;
+									while(DateTime.Now <= endTime) {
 										junk = tp.ReadLine().Trim();
 										try {
 											// If ParseNMEA0183Sentence() doesn't throw an exception
 											// this sentence is a valid NMEA sentence that we know how
 											// to handle, so we can use this device for something
-											ParseNMEA0183Sentence(junk, false);
+											this.ParseNMEA0183Sentence(junk, false);
 											return (true);
 										} catch(Exception) {
 										}
