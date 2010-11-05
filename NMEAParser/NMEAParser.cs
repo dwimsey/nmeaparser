@@ -197,13 +197,13 @@ namespace NMEAParser
 		}
 		void  p_FileReaderThread_DoWork(object sender, DoWorkEventArgs e)
 		{
-			if(p_InputLog == null) {
+			if(this.p_InputLog == null) {
 				throw new ArgumentNullException("p_InputLog");
 			}
 			string currentLine;
 			while(true) {
 				while(!this.p_InputLog.EndOfStream) {
-					currentLine = p_InputLog.ReadLine();
+					currentLine = p_InputLog.ReadLine().Trim();
 					if(string.IsNullOrEmpty(currentLine)) {
 						// Ignore blank lines in files
 						continue;
@@ -227,10 +227,25 @@ namespace NMEAParser
 					}
 					this.ParseNMEA0183Sentence(currentLine, true);
 				}
-				// restart the log?
-				if(false) {
-					p_InputLog.Close();
-					p_InputLog = System.IO.File.OpenText(this.p_InputLogFilename);
+				if(this.p_TailLogfile) {
+					// @TODO this doesn't handle when a file shrinks, such as when it rolls over or
+					// something like that
+					System.Threading.Thread.Sleep(200);
+				} else {
+					if(p_InputLog.BaseStream.CanSeek) {
+						p_InputLog.BaseStream.Seek(0, System.IO.SeekOrigin.Begin);
+						System.Threading.Thread.Sleep(10);
+					} else {
+						p_InputLog.Close();
+						// restart the log?
+						if(this.p_AutoRestartLogfilePlayback) {
+							p_InputLog = System.IO.File.OpenText(this.p_InputLogFilename);
+							System.Threading.Thread.Sleep(10);
+						} else {
+							// Exit the thread, we have nothing else to do :(
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -537,11 +552,38 @@ namespace NMEAParser
 			p_NMEAVersion = "1.5";
 			p_RAWLogfile = null;
 			p_EnableRAWLogfile = false;
+			p_AutoRestartLogfilePlayback = true;
 		}
 
 		private System.IO.TextWriter p_RAWLogfile;
 		private System.IO.StreamReader p_InputLog;
 		private string p_InputLogFilename;
+
+		private bool p_AutoRestartLogfilePlayback;
+		public bool AutoRestartLogfilePlayback
+		{
+			get
+			{
+				return (p_AutoRestartLogfilePlayback);
+			}
+			set
+			{
+				p_AutoRestartLogfilePlayback = value;
+			}
+		}
+
+		private bool p_TailLogfile;
+		public bool TailLogfile
+		{
+			get
+			{
+				return (p_TailLogfile);
+			}
+			set
+			{
+				p_TailLogfile = value;
+			}
+		}
 
 		private bool p_EnableRAWLogfile;
 		public bool EnableRAWLogfile
